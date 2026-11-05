@@ -20,3 +20,20 @@ th { color:var(--muted); font-weight:600; }
 .ok { color:var(--ok); font-size:14px; margin-top:10px; }
 .muted { color:var(--muted); font-size:14px; }
 .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#e8eefb; color:var(--accent); font-size:12px; }
+nav.roles { display:flex; gap:14px; }
+form.stack { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
+form.stack .field { min-width:160px; flex:1; }
+form.stack .field:has(textarea) { flex-basis:100%; }
+form.inline { display:inline-flex; gap:6px; align-items:flex-end; flex-wrap:wrap; }
+form.inline .field { min-width:110px; }
+form.inline label { margin-top:0; }
+form .ok, form .error { margin:0 0 8px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; }
+.stat { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; }
+.stat b { display:block; font-size:22px; }
+.filters { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+.filters > div { min-width:140px; }
+h2 { margin-top:0; }
+h3 { margin:18px 0 8px; }
+mark, b.hl { background:#fff3bf; }
+td form { margin:0; }

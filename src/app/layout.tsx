@@ -15,6 +15,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <header className="top">
           <Link href={user ? homeFor(user.role) : '/login'} className="brand">TracePay</Link>
           <span className="spacer" />
+          {user?.role === 'INVESTIGATOR' && (
+            <nav className="roles"><Link href="/investigator">Case queue</Link></nav>
+          )}
+          {user?.role === 'SUPERVISOR' && (
+            <nav className="roles">
+              <Link href="/supervisor">Dashboard</Link>
+              <Link href="/supervisor/cases">Cases</Link>
+              <Link href="/supervisor/freezes">Freezes &amp; recovery</Link>
+              <Link href="/supervisor/audit">Audit log</Link>
+            </nav>
+          )}
           {user ? (
             <>
               <span className="muted">{user.name}</span>

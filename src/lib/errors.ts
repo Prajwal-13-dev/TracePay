@@ -26,7 +26,10 @@ export function toResponse(e: unknown) {
   }
   const pg = e as PgError;
   if (pg && typeof pg.code === 'string' && PG_STATUS[pg.code]) {
-    return NextResponse.json({ error: pg.message, code: pg.code, detail: pg.detail ?? null },
+    // TP* details carry the useful numbers (limit, total, excess). Postgres' own details for
+    // 23xxx errors echo the whole failing row (e.g. a narrative), so they are not sent to the browser.
+    const detail = pg.code.startsWith('TP') ? pg.detail ?? null : null;
+    return NextResponse.json({ error: pg.message, code: pg.code, detail },
                              { status: PG_STATUS[pg.code] });
   }
   console.error('Unhandled error:', pg?.code ?? '', pg?.message ?? e);   // no stack trace to the client
