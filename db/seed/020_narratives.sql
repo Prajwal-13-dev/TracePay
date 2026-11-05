@@ -221,8 +221,8 @@ INSERT INTO transactions (external_ref, source_account_id, destination_account_i
 SELECT s.ref, a.account_id, b.account_id, s.amt, 'UPI', s.at
 FROM seed_cases s JOIN accounts a ON a.account_ref = s.src JOIN accounts b ON b.account_ref = s.dst ORDER BY s.ref;
 
-INSERT INTO fraud_cases (customer_id, disputed_txn_id, reported_amount, narrative, created_at)
-SELECT a.user_id, t.txn_id, s.amt, s.narrative, s.at + interval '2 hours'
+INSERT INTO fraud_cases (customer_id, disputed_txn_id, reported_amount, narrative, created_at, priority)
+SELECT a.user_id, t.txn_id, s.amt, s.narrative, s.at + interval '2 hours', 1 + (substr(s.ref, 2)::int % 5)
 FROM seed_cases s JOIN transactions t ON t.external_ref = s.ref JOIN accounts a ON a.account_ref = s.src ORDER BY s.ref;
 
 -- Extra transfers for the demo victims (a second, unrelated payment each)

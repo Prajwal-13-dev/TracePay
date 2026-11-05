@@ -10,7 +10,7 @@ export default async function InvestigatorQueue({ searchParams }: {
 }) {
   const user = await requirePageRole('INVESTIGATOR');
   const sp = await searchParams;
-  const mine = sp.mine !== '0';
+  const mine = sp.mine === '1';   // default: all cases; 'Assigned to me' is a filter
   // Filters become parameters ($n), never string-concatenated values.
   const where: string[] = []; const params: unknown[] = [];
   const add = (sql: string, v: unknown) => { params.push(v); where.push(sql.replace('?', '$' + params.length)); };
@@ -51,7 +51,7 @@ export default async function InvestigatorQueue({ searchParams }: {
         <div><label>Min amount (₹)</label><input name="min" type="number" defaultValue={sp.min} /></div>
         <div><label>Show</label>
           <select name="mine" defaultValue={mine ? '1' : '0'}>
-            <option value="1">Assigned to me</option><option value="0">All cases</option>
+            <option value="0">All cases</option><option value="1">Assigned to me</option>
           </select></div>
         <button>Filter</button>
       </form>
