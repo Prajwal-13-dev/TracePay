@@ -1,5 +1,11 @@
-.env.local
+# secrets
 .env
+.env.local
+# dependencies and build output
 node_modules/
 .next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+# embedding model cache
 .cache/
