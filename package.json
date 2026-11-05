@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "embed": "node --env-file=.env scripts/embed.mjs"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.3.2",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.15",
     "next": "16.4.5",

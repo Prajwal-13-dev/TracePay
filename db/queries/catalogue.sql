@@ -24,7 +24,7 @@ BEGIN
     RETURNING case_id INTO c2;
   CALL assign_case(c1, inv, sup); CALL assign_case(c2, inv, sup);
   PERFORM set_config('app.user_role', 'INVESTIGATOR', true);
-  UPDATE fraud_cases SET status = 'INVESTIGATING';
+  UPDATE fraud_cases SET status = 'INVESTIGATING' WHERE case_id IN (c1, c2);
   CALL start_trace(c1); CALL start_trace(c2);
   CALL confirm_link(c1, tx[1], tx[2], 25000, 'MANUAL', inv);
   CALL confirm_link(c1, tx[1], tx[3], 15000, 'MANUAL', inv);
@@ -35,7 +35,7 @@ BEGIN
   PERFORM set_config('app.user_role', 'SUPERVISOR', true);
   CALL decide_freeze(f, true, sup);
   CALL verify_loss(c1, 40000, sup); CALL verify_loss(c2, 20000, sup);
-  UPDATE fraud_cases SET status = 'RECOVERY';
+  UPDATE fraud_cases SET status = 'RECOVERY' WHERE case_id IN (c1, c2);
   a := allocate_recovery(f, c1, 7000, sup);
   PERFORM allocate_recovery(f, c2, 3000, sup);
   PERFORM process_refund(a, 4000, gen_random_uuid(), sup);
@@ -92,9 +92,11 @@ SELECT a.account_ref, d.case_count, d.disputed_inflow,
 FROM account_disputed_inflow d JOIN accounts a USING (account_id);
 
 \echo '\n== 17.5 INTERSECT: accounts shared by C1 and C2'
-SELECT account_id FROM trace_accounts WHERE case_id = 1
+SELECT account_id FROM trace_accounts
+WHERE case_id = (SELECT case_id FROM fraud_cases WHERE disputed_txn_id = (SELECT txn_id FROM transactions WHERE external_ref = 'T1'))
 INTERSECT
-SELECT account_id FROM trace_accounts WHERE case_id = 2;
+SELECT account_id FROM trace_accounts
+WHERE case_id = (SELECT case_id FROM fraud_cases WHERE disputed_txn_id = (SELECT txn_id FROM transactions WHERE external_ref = 'T6'));
 
 \echo '\n== 17.5 EXCEPT: traced accounts that are not frozen'
 SELECT account_id FROM trace_accounts EXCEPT SELECT account_id FROM active_freezes ORDER BY 1;

@@ -1,3 +1,4 @@
+-- Tracing tests (handbook Section 24): T08 (via confirm_link), T09, T10, T11, T12, T13 + FIFO.
 -- Runs in one transaction and rolls back.
 -- Run: docker compose exec postgres psql -U tracepay_owner -d tracepay -f /db/tests/t08_t13_tracing.sql
 \set QUIET on
@@ -68,9 +69,9 @@ CREATE TEMP TABLE c AS
   SELECT (SELECT case_id FROM fraud_cases WHERE disputed_txn_id = pg_temp.txn('T1')) AS c1,
          (SELECT case_id FROM fraud_cases WHERE disputed_txn_id = pg_temp.txn('T6')) AS c2;
 SELECT pg_temp.act_as('sup1@demo.in') \g /dev/null
-UPDATE fraud_cases SET status = 'UNDER_REVIEW';
+UPDATE fraud_cases SET status = 'UNDER_REVIEW' WHERE case_id IN (SELECT c1 FROM c UNION SELECT c2 FROM c);
 SELECT pg_temp.act_as('inv@demo.in') \g /dev/null
-UPDATE fraud_cases SET status = 'INVESTIGATING';
+UPDATE fraud_cases SET status = 'INVESTIGATING' WHERE case_id IN (SELECT c1 FROM c UNION SELECT c2 FROM c);
 
 INSERT INTO results (line) SELECT pg_temp.expect_ok('start_trace C1 (root T1, 40,000)', format('CALL start_trace(%s)', c1)) FROM c;
 INSERT INTO results (line) SELECT pg_temp.expect_ok('start_trace C2 (root T6, 20,000)', format('CALL start_trace(%s)', c2)) FROM c;

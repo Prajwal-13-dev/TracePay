@@ -64,7 +64,7 @@ SELECT pg_temp.check('one open assignment, 2 in history, status UNDER_REVIEW',
 
 -- Investigation and trace: C1 traces 7,000 to D via T4; C2 traces 3,000 to D
 SELECT pg_temp.act_as('inv@demo.in') \g /dev/null
-UPDATE fraud_cases SET status = 'INVESTIGATING';
+UPDATE fraud_cases SET status = 'INVESTIGATING' WHERE case_id IN (SELECT c1 FROM c UNION SELECT c2 FROM c);
 DO $$ DECLARE c1 bigint; c2 bigint; inv bigint := pg_temp.uid('inv@demo.in');
 BEGIN
   SELECT x.c1, x.c2 INTO c1, c2 FROM c x;
@@ -98,7 +98,7 @@ BEGIN
   SELECT x.c1, x.c2 INTO c1, c2 FROM c x;
   CALL verify_loss(c1, 40000, s); CALL verify_loss(c2, 2000, s);
 END $$;
-UPDATE fraud_cases SET status = 'RECOVERY';
+UPDATE fraud_cases SET status = 'RECOVERY' WHERE case_id IN (SELECT c1 FROM c UNION SELECT c2 FROM c);
 
 -- Allocation
 INSERT INTO results (line) SELECT pg_temp.expect_error('allocate 8,000 to C1 (only 7,000 traced to D)',

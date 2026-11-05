@@ -1,0 +1,386 @@
+[
+ {
+  "group": "fake_courier",
+  "narrative": "A man said he was from a courier company and my parcel was stuck at customs. He asked me to pay a clearance fee by UPI."
+ },
+ {
+  "group": "fake_courier",
+  "narrative": "Got a call that a package in my name was held at the airport and I had to pay customs duty immediately or face a police case."
+ },
+ {
+  "group": "fake_courier",
+  "narrative": "Someone posing as a delivery agent said my shipment needed a small re-delivery charge, sent a payment link and took my money."
+ },
+ {
+  "group": "fake_courier",
+  "narrative": "Received SMS about failed parcel delivery with a link. I paid the address update fee and then more money was taken."
+ },
+ {
+  "group": "fake_courier",
+  "narrative": "Caller claimed to be from DHL and said a box with illegal items was booked using my Aadhaar. They demanded a fee to clear my name."
+ },
+ {
+  "group": "fake_courier",
+  "narrative": "Courier executive told me my international gift parcel had customs tax pending and I transferred the amount to his account."
+ },
+ {
+  "group": "fake_courier",
+  "narrative": "They said my courier contained drugs and a customs officer would arrest me unless I paid a verification charge immediately."
+ },
+ {
+  "group": "fake_courier",
+  "narrative": "Parcel from abroad supposedly needed an import fee. The person on WhatsApp sent a QR code and I paid twice."
+ },
+ {
+  "group": "fake_courier",
+  "narrative": "Fake logistics company message said delivery was on hold for a pending shipping charge; after paying, the number was switched off."
+ },
+ {
+  "group": "fake_courier",
+  "narrative": "I was told a package addressed to me was seized at customs and I must pay a penalty online to release it."
+ },
+ {
+  "group": "kyc_update",
+  "narrative": "Message said my bank KYC had expired and the account would be blocked today. I clicked the link and entered my OTP."
+ },
+ {
+  "group": "kyc_update",
+  "narrative": "Caller pretending to be from the bank asked me to update my PAN details to avoid account suspension and took my OTP."
+ },
+ {
+  "group": "kyc_update",
+  "narrative": "Got an SMS that my SIM KYC was incomplete. The executive made me install a screen sharing app and money left my account."
+ },
+ {
+  "group": "kyc_update",
+  "narrative": "Someone said my net banking would be frozen unless I re-verified KYC through their link. After that unauthorised debits happened."
+ },
+ {
+  "group": "kyc_update",
+  "narrative": "A person from customer care told me my debit card KYC was pending and asked for card number, expiry and the OTP."
+ },
+ {
+  "group": "kyc_update",
+  "narrative": "Received a call about updating Aadhaar linking with my account. They sent a form link and emptied my savings."
+ },
+ {
+  "group": "kyc_update",
+  "narrative": "Bank officer on phone said my account would be closed for incomplete KYC, made me share the code that came by SMS."
+ },
+ {
+  "group": "kyc_update",
+  "narrative": "Link in message to complete e-KYC looked like my bank's site. I entered my login and lost money within minutes."
+ },
+ {
+  "group": "kyc_update",
+  "narrative": "They claimed my wallet KYC verification failed and I had to pay a small fee and share OTP to reactivate it."
+ },
+ {
+  "group": "kyc_update",
+  "narrative": "Phone call warned that my account was blocked due to KYC non-compliance; I followed their steps and money was transferred out."
+ },
+ {
+  "group": "job_task",
+  "narrative": "I joined a Telegram group offering part-time work liking YouTube videos. After small payouts they asked me to deposit money for tasks."
+ },
+ {
+  "group": "job_task",
+  "narrative": "Work from home job paid for rating hotels online. Later I had to prepay for premium tasks and could never withdraw."
+ },
+ {
+  "group": "job_task",
+  "narrative": "A recruiter on WhatsApp offered daily income for simple online tasks. I invested to unlock higher tasks and lost everything."
+ },
+ {
+  "group": "job_task",
+  "narrative": "Part-time job reviewing products required me to buy tasks first. They kept saying pay more to release my commission."
+ },
+ {
+  "group": "job_task",
+  "narrative": "Got a job offer to like Instagram posts. After two small credits they asked for a deposit for a merchant task."
+ },
+ {
+  "group": "job_task",
+  "narrative": "Online task job promised commission for completing orders. My balance showed profit but withdrawal needed more payment."
+ },
+ {
+  "group": "job_task",
+  "narrative": "Telegram mentor said I must recharge my task account to continue earning. Each round asked for a bigger amount."
+ },
+ {
+  "group": "job_task",
+  "narrative": "Home based job on an app for giving ratings. They froze my earnings until I paid a tax and a security deposit."
+ },
+ {
+  "group": "job_task",
+  "narrative": "Message offered easy money for subscribing to channels; later they made me transfer funds for prepaid assignments."
+ },
+ {
+  "group": "job_task",
+  "narrative": "I did data tasks for a company that paid first, then demanded I fund my wallet to finish a combination task."
+ },
+ {
+  "group": "investment_app",
+  "narrative": "An investment app promised double returns on crypto trading. My dashboard showed profit but I could not withdraw."
+ },
+ {
+  "group": "investment_app",
+  "narrative": "Stock market tips group convinced me to invest through their trading platform. When I asked to withdraw they wanted fees."
+ },
+ {
+  "group": "investment_app",
+  "narrative": "Advisor on WhatsApp said IPO allotment was guaranteed through their app. I transferred money and the app vanished."
+ },
+ {
+  "group": "investment_app",
+  "narrative": "Fake trading website showed huge gains on forex. To withdraw, they asked me to pay a tax deposit first."
+ },
+ {
+  "group": "investment_app",
+  "narrative": "Someone I met online taught me to trade on a platform that later blocked my account after I invested lakhs."
+ },
+ {
+  "group": "investment_app",
+  "narrative": "Group admin claimed to be from a brokerage and gave a link to an app for institutional trading. Money never came back."
+ },
+ {
+  "group": "investment_app",
+  "narrative": "Promised fixed high interest scheme through a mobile app. After the first returns they stopped responding."
+ },
+ {
+  "group": "investment_app",
+  "narrative": "Crypto mining investment showed daily earnings, but withdrawal required paying a verification fee repeatedly."
+ },
+ {
+  "group": "investment_app",
+  "narrative": "Stock tips mentor made me open an account on their trading app; profits were fake and they demanded commission."
+ },
+ {
+  "group": "investment_app",
+  "narrative": "Online investment platform said my capital was locked until I paid a service charge for account upgrade."
+ },
+ {
+  "group": "electricity_bill",
+  "narrative": "SMS said my electricity connection would be cut tonight because last month's bill was not updated. I called and paid."
+ },
+ {
+  "group": "electricity_bill",
+  "narrative": "Message from fake power department asked me to call an officer. He made me install an app and pay the pending bill."
+ },
+ {
+  "group": "electricity_bill",
+  "narrative": "Received warning that power supply will be disconnected at 9:30 pm; the number asked me to pay through a link."
+ },
+ {
+  "group": "electricity_bill",
+  "narrative": "Electricity board officer on phone said my bill payment failed and asked for a small payment to update it."
+ },
+ {
+  "group": "electricity_bill",
+  "narrative": "Text said my electricity would be cut due to unpaid dues. The caller took remote access of my phone."
+ },
+ {
+  "group": "electricity_bill",
+  "narrative": "They said my meter account was not updated and to avoid disconnection I should pay ten rupees, then my account was drained."
+ },
+ {
+  "group": "electricity_bill",
+  "narrative": "Fake bill update message with a phone number. Officer asked me to download a support app to clear dues."
+ },
+ {
+  "group": "electricity_bill",
+  "narrative": "I got a message about power cut tonight and paid the outstanding amount through the link they sent."
+ },
+ {
+  "group": "electricity_bill",
+  "narrative": "Caller claimed to be from the electricity department and threatened disconnection unless I paid immediately."
+ },
+ {
+  "group": "electricity_bill",
+  "narrative": "Message said consumer number blocked for non payment; following their instructions I lost money from my account."
+ },
+ {
+  "group": "olx_buyer",
+  "narrative": "I listed my sofa on OLX. A buyer said he was in the army and sent a QR code to receive money, but money was debited."
+ },
+ {
+  "group": "olx_buyer",
+  "narrative": "Buyer for my bike on an online marketplace asked me to scan a code to get advance payment and I lost money instead."
+ },
+ {
+  "group": "olx_buyer",
+  "narrative": "Someone interested in my old phone on OLX sent a payment request instead of paying, saying I must approve to receive."
+ },
+ {
+  "group": "olx_buyer",
+  "narrative": "Marketplace buyer claimed to be an army officer and asked me to send one rupee to verify, then took larger amounts."
+ },
+ {
+  "group": "olx_buyer",
+  "narrative": "While selling furniture online, the buyer sent a UPI collect request saying it was a refund. I entered PIN and lost money."
+ },
+ {
+  "group": "olx_buyer",
+  "narrative": "Fake buyer on classifieds wanted my laptop, sent QR to receive funds and my account got debited."
+ },
+ {
+  "group": "olx_buyer",
+  "narrative": "Selling a fridge on OLX, the buyer convinced me to pay a transfer charge to release his payment."
+ },
+ {
+  "group": "olx_buyer",
+  "narrative": "Buyer said he will pay via the army payment system and I needed to send money first for verification."
+ },
+ {
+  "group": "olx_buyer",
+  "narrative": "A person replying to my ad sent a link to receive payment; after entering my UPI PIN money went out."
+ },
+ {
+  "group": "olx_buyer",
+  "narrative": "OLX buyer asked me to scan a QR to get the amount for my camera, and the amount was deducted instead."
+ },
+ {
+  "group": "loan_app",
+  "narrative": "I took a small loan from an instant loan app. They charged huge fees and kept demanding more payments."
+ },
+ {
+  "group": "loan_app",
+  "narrative": "Loan app approved money without documents, then harassed me and my contacts to pay several times the amount."
+ },
+ {
+  "group": "loan_app",
+  "narrative": "Instant loan app recovery agents threatened to send morphed photos to my contacts unless I paid more."
+ },
+ {
+  "group": "loan_app",
+  "narrative": "I applied for a quick loan; they asked for processing fee and insurance charges but never gave the loan."
+ },
+ {
+  "group": "loan_app",
+  "narrative": "Loan app accessed my contacts and gallery and blackmailed me after I repaid the amount on time."
+ },
+ {
+  "group": "loan_app",
+  "narrative": "Got a pre-approved loan offer by SMS; paid advance processing charges and GST but no loan was disbursed."
+ },
+ {
+  "group": "loan_app",
+  "narrative": "Small loan app deducted heavy charges and gave a short repayment period, then extorted extra money with threats."
+ },
+ {
+  "group": "loan_app",
+  "narrative": "Online lender asked for a refundable security deposit before releasing the loan, then stopped answering."
+ },
+ {
+  "group": "loan_app",
+  "narrative": "Recovery agents from a loan app called my family and abused me to make me pay money I did not owe."
+ },
+ {
+  "group": "loan_app",
+  "narrative": "Quick cash loan app demanded repayment of double the amount within a week and threatened defamation."
+ },
+ {
+  "group": "sextortion",
+  "narrative": "Received a video call from an unknown woman; later they threatened to share a morphed video unless I paid."
+ },
+ {
+  "group": "sextortion",
+  "narrative": "A stranger on social media recorded our video call and demanded money to not send it to my family."
+ },
+ {
+  "group": "sextortion",
+  "narrative": "After a late night video call, I got threats that the clip would be uploaded unless I transferred money."
+ },
+ {
+  "group": "sextortion",
+  "narrative": "Someone pretending to be a police officer said there was a complaint about an obscene video and demanded a settlement."
+ },
+ {
+  "group": "sextortion",
+  "narrative": "Fake profile chatted with me, then blackmailed me with screenshots and a recorded call for money."
+ },
+ {
+  "group": "sextortion",
+  "narrative": "Unknown number video called me, then sent an edited video and asked for payment to delete it."
+ },
+ {
+  "group": "sextortion",
+  "narrative": "They threatened to post my private video on YouTube unless I paid; a fake cyber cell officer also called."
+ },
+ {
+  "group": "sextortion",
+  "narrative": "A woman added me on Instagram, video called, and the next day I received extortion messages."
+ },
+ {
+  "group": "sextortion",
+  "narrative": "After a WhatsApp video call, I was blackmailed with a recording and told to pay or it would go viral."
+ },
+ {
+  "group": "sextortion",
+  "narrative": "Caller said a girl had filed a complaint over our chat and asked money to close the case, threatening arrest."
+ },
+ {
+  "group": "control",
+  "narrative": "I paid a contractor for house painting in advance and he never came back to finish the work."
+ },
+ {
+  "group": "control",
+  "narrative": "Ordered a phone from an e-commerce site but received an empty box; the seller refuses refund."
+ },
+ {
+  "group": "control",
+  "narrative": "My cousin borrowed money for a medical emergency and is not returning it despite promises."
+ },
+ {
+  "group": "control",
+  "narrative": "Paid fees to a coaching institute that shut down a week later without returning any money."
+ },
+ {
+  "group": "control",
+  "narrative": "A travel agent took payment for a holiday package and the hotel booking turned out not to exist."
+ },
+ {
+  "group": "control",
+  "narrative": "I transferred rent to a landlord for a flat that was already rented to someone else."
+ },
+ {
+  "group": "control",
+  "narrative": "Paid a used car dealer a deposit; the car had a different chassis number from the papers."
+ },
+ {
+  "group": "control",
+  "narrative": "A wedding photographer took an advance and did not show up on the wedding day."
+ },
+ {
+  "group": "control",
+  "narrative": "Gym membership was charged for a full year but the gym closed after two months."
+ },
+ {
+  "group": "control",
+  "narrative": "Restaurant charged my card twice for one bill and the manager is not reversing it."
+ },
+ {
+  "group": "control",
+  "narrative": "My debit card was swallowed by an ATM and the amount was debited without cash."
+ },
+ {
+  "group": "control",
+  "narrative": "Paid a school admission donation to an agent who disappeared after collecting money."
+ },
+ {
+  "group": "control",
+  "narrative": "Ordered furniture online and received a broken table; the company is ignoring complaints."
+ },
+ {
+  "group": "control",
+  "narrative": "A friend sold me concert tickets that were rejected at the gate as duplicates."
+ },
+ {
+  "group": "control",
+  "narrative": "Interior designer took payment for materials but used cheaper items than agreed."
+ },
+ {
+  "group": "control",
+  "narrative": "Paid an astrologer for remedies after he promised results; nothing happened and he stopped calling."
+ }
+]
