@@ -2,7 +2,7 @@
 
 1. Rebuild the database (README), then load the fixture:
 
-       docker compose exec postgres psql -U tracepay_owner -d tracepay -f /db/tests/race_setup.sql
+       docker compose exec postgres psql -U tracepay_owner -d tracepay -f /db/tests/race_demo_setup.sql
 
    It creates cases for T1 and T6 (each verified at 8,000) and a 10,000 freeze on account D, then prints
    **two INSERT lines**. Only the freeze limit can stop the second allocation.

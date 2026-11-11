@@ -13,22 +13,26 @@ export async function query<T extends QueryResultRow = QueryResultRow>(text: str
   return res.rows;
 }
 
-// Every write runs in ONE transaction that carries the acting user's id and role,
+// Every write runs in ONE transaction that carries the acting user's id (and role, for older triggers),
 // so the state-machine and audit triggers know who acted. is_local = true: the settings
 // vanish at COMMIT, so a pooled connection never leaks them to the next request.
-export async function withTx<T>(user: SessionUser, fn: (c: PoolClient) => Promise<T>): Promise<T> {
+// user = null is for public sign-up only (nobody is signed in yet).
+export async function withTx<T>(user: SessionUser | null, fn: (c: PoolClient) => Promise<T>): Promise<T> {
   const c = await pool.connect();
   try {
     await c.query('BEGIN ISOLATION LEVEL READ COMMITTED');
     await c.query("SELECT set_config('app.user_id', $1, true), set_config('app.user_role', $2, true)",
-                  [String(user.id), user.role]);
+                  [user ? String(user.id) : '', user?.role ?? '']);
     const out = await fn(c);
     await c.query('COMMIT');
     return out;
   } catch (e) {
-    await c.query('ROLLBACK');
+    await c.query('ROLLBACK').catch(() => {});   // never hide the real error behind a failed rollback
     throw e;
   } finally {
     c.release();
   }
 }
+
+// Opening balance for accounts created at sign-up (demo money so a new customer can send a transfer).
+export const DEMO_OPENING_BALANCE = Number(process.env.DEMO_OPENING_BALANCE ?? 100000);

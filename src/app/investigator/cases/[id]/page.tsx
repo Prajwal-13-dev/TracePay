@@ -1,10 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import StatusBadge from '@/components/StatusBadge';
 import { requirePageRole } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { inr, when } from '@/lib/format';
 import ActionForm from '@/components/ActionForm';
 import SimilarCases from '@/components/SimilarCases';
+import TraceGraph from '@/components/TraceGraph';
+import { caseTraceGraph } from '@/lib/traceGraph';
+import { WINDOW_HOURS } from '@/lib/graph';
 
 export default async function CaseWorkspace({ params }: { params: Promise<{ id: string }> }) {
   const user = await requirePageRole('INVESTIGATOR');
@@ -13,24 +17,17 @@ export default async function CaseWorkspace({ params }: { params: Promise<{ id: 
 
   const [c] = await query<{ case_id: string; status: string; priority: number; reported_amount: string;
     verified_loss: string | null; narrative: string; investigator_notes: string | null; disputed_txn_id: string;
-    txn_ref: string; customer: string; assigned_to_me: boolean }>(
-    `SELECT c.*, t.external_ref AS txn_ref, u.full_name AS customer,
+    txn_ref: string; customer: string; assigned_to_me: boolean; verified_by_name: string | null }>(
+    `SELECT c.*, t.external_ref AS txn_ref, u.full_name AS customer, vb.full_name AS verified_by_name,
             EXISTS (SELECT 1 FROM case_assignments a WHERE a.case_id = c.case_id AND a.ended_at IS NULL
                     AND a.investigator_id = $2) AS assigned_to_me
      FROM fraud_cases c JOIN transactions t ON t.txn_id = c.disputed_txn_id JOIN users u ON u.user_id = c.customer_id
+     LEFT JOIN users vb ON vb.user_id = c.verified_by
      WHERE c.case_id = $1`, [caseId, user.id]);
   if (!c) notFound();
 
-  const candidates = await query<{ txn_id: string; ref: string; parent_ref: string | null; depth: number;
-    from_ref: string; to_ref: string; amount: string; occurred_at: Date; upper_bound: string }>(
-    `SELECT tc.txn_id, t.external_ref AS ref, p.external_ref AS parent_ref, tc.depth, sa.account_ref AS from_ref,
-            da.account_ref AS to_ref, tc.amount, tc.occurred_at, tc.upper_bound
-     FROM trace_candidates($1) tc
-     JOIN transactions t ON t.txn_id = tc.txn_id
-     LEFT JOIN transactions p ON p.txn_id = tc.parent_txn_id
-     JOIN accounts sa ON sa.account_id = tc.source_account_id
-     JOIN accounts da ON da.account_id = tc.destination_account_id
-     ORDER BY tc.depth, tc.occurred_at`, [c.disputed_txn_id]);
+  const graph = await caseTraceGraph(caseId, Number(c.disputed_txn_id));
+  const candidates = graph.edges;
 
   const nodes = await query<{ node_id: string; txn_id: string; ref: string; to_ref: string; is_root: boolean;
     inflow_amount: string; outflow: string; txn_amount: string; all_cases: string }>(
@@ -50,8 +47,8 @@ export default async function CaseWorkspace({ params }: { params: Promise<{ id: 
      JOIN trace_nodes tn ON tn.node_id = l.to_node_id   JOIN transactions tt ON tt.txn_id = tn.txn_id
      WHERE l.case_id = $1 ORDER BY tt.occurred_at, l.link_id`, [caseId]);
 
-  const fifo = await query<{ from_ref: string; to_ref: string; suggested_amount: string }>(
-    `SELECT ft.external_ref AS from_ref, tt.external_ref AS to_ref, s.suggested_amount
+  const fifo = await query<{ from_txn: number; to_txn: number; from_ref: string; to_ref: string; suggested_amount: string }>(
+    `SELECT n.txn_id::int AS from_txn, s.to_txn_id::int AS to_txn, ft.external_ref AS from_ref, tt.external_ref AS to_ref, s.suggested_amount
      FROM trace_nodes n JOIN transactions ft ON ft.txn_id = n.txn_id
      CROSS JOIN LATERAL suggest_fifo($1, n.txn_id) s
      JOIN transactions tt ON tt.txn_id = s.to_txn_id
@@ -67,25 +64,41 @@ export default async function CaseWorkspace({ params }: { params: Promise<{ id: 
      FROM account_freezes f JOIN accounts a USING (account_id) WHERE f.requested_for_case = $1 ORDER BY f.freeze_id`, [caseId]);
 
   const canWork = c.assigned_to_me && c.status === 'INVESTIGATING';
+  const canFreeze = c.assigned_to_me && ['INVESTIGATING', 'RECOVERY'].includes(c.status);
+  // FIFO suggestion for each graph edge, taken from the edge's own parent hop.
+  const parentOf = new Map(candidates.map(e => [e.txn_id, e.parent_txn_id]));
+  const fifoByEdge: Record<number, number> = {};
+  for (const f of fifo) if (parentOf.get(f.to_txn) === f.from_txn) fifoByEdge[f.to_txn] = Number(f.suggested_amount);
   const nodeOptions = nodes.map(n => ({ value: n.txn_id, label: `${n.ref} (inflow ${inr(n.inflow_amount)})` }));
   const targetOptions = candidates.filter(t => t.depth > 0)
-    .map(t => ({ value: t.txn_id, label: `${t.ref}: ${t.from_ref} → ${t.to_ref}, ${inr(t.amount)}` }));
+    .map(t => ({ value: String(t.txn_id), label: `${t.ref}: ${t.from_ref} → ${t.to_ref}, ${inr(t.amount)}` }));
 
   return (
     <>
       <p><Link href="/investigator">← Case queue</Link></p>
       <div className="card">
-        <h2>Case #{c.case_id} <span className="badge">{c.status}</span></h2>
+        <h2>Case #{c.case_id} <StatusBadge status={c.status} /></h2>
         <div className="grid">
           <div className="stat"><span className="muted">Customer</span><b>{c.customer}</b></div>
           <div className="stat"><span className="muted">Disputed transfer</span><b>{c.txn_ref}</b></div>
           <div className="stat"><span className="muted">Reported</span><b>{inr(c.reported_amount)}</b></div>
-          <div className="stat"><span className="muted">Verified loss</span><b>{inr(c.verified_loss)}</b></div>
+          <div className="stat"><span className="muted">Verified loss</span><b>{inr(c.verified_loss)}</b>
+            {c.verified_by_name && <small>by {c.verified_by_name}</small>}</div>
         </div>
         <p>{c.narrative}</p>
         {!c.assigned_to_me && <p className="error">This case is not assigned to you: view only.</p>}
         {c.assigned_to_me && c.status === 'UNDER_REVIEW' && (
-          <ActionForm endpoint={`/api/cases/${caseId}/status`} extra={{ to: 'INVESTIGATING' }} submit="Accept and start investigating" />
+          <ActionForm endpoint={`/api/cases/${caseId}/status`} extra={{ to: 'INVESTIGATING' }} submit="Accept and start investigating"
+                      success="Accepted: the case is yours to investigate" />
+        )}
+        {c.assigned_to_me && (c.status === 'UNDER_REVIEW' || (c.status === 'INVESTIGATING' && links.length === 0 && freezes.length === 0)) && (
+          <details style={{ marginTop: 10 }}>
+            <summary className="muted">Can&apos;t take this case? Hand it back to a supervisor</summary>
+            <ActionForm endpoint={`/api/cases/${caseId}/handback`} submit="Hand back" variant="secondary"
+                        success="Handed back: a supervisor will reassign it" confirm="Hand this case back? It will be unassigned from you."
+                        fields={[{ name: 'reason', label: 'Reason (seen by supervisors)', type: 'textarea', required: true,
+                                   placeholder: 'e.g. I know the customer personally' }]} />
+          </details>
         )}
         {c.assigned_to_me && (
           <>
@@ -97,19 +110,24 @@ export default async function CaseWorkspace({ params }: { params: Promise<{ id: 
       </div>
 
       <div className="card">
-        <h2>Candidate trace</h2>
-        <p className="muted">Recursive query from {c.txn_ref}: forward in time, 72-hour window, up to 5 hops, each transfer once.
-          &quot;Upper bound&quot; is a display ceiling, never written as attribution.</p>
-        <table>
-          <thead><tr><th>Depth</th><th>Transfer</th><th>From hop</th><th>From → To</th><th>Amount</th><th>Upper bound</th><th>When</th></tr></thead>
-          <tbody>{candidates.map(t => (
-            <tr key={t.txn_id}><td>{t.depth}</td><td>{t.ref}</td><td>{t.parent_ref ?? '—'}</td>
-              <td>{t.from_ref} → {t.to_ref}</td><td>{inr(t.amount)}</td><td>{inr(t.upper_bound)}</td><td>{when(t.occurred_at)}</td></tr>
-          ))}</tbody>
-        </table>
+        <h2>Money trail</h2>
+        <p className="muted">Where the money from {c.txn_ref} could have gone: later transfers only, at most {WINDOW_HOURS} hours
+          between hops, as many hops as the money went, each transfer shown once.
+          {nodes.length === 0 && canWork && ' Start the trace to confirm links.'}</p>
         {canWork && nodes.length === 0 && (
-          <p><ActionForm endpoint={`/api/cases/${caseId}/trace`} submit="Start trace (root = disputed transfer)" /></p>
+          <ActionForm endpoint={`/api/cases/${caseId}/trace`} submit="Start trace from the disputed transfer" />
         )}
+        <TraceGraph caseId={caseId} graph={graph} fifo={fifoByEdge} canWork={canWork && nodes.length > 0} canFreeze={canFreeze} />
+        <details>
+          <summary className="muted">Show as a table</summary>
+          <table>
+            <thead><tr><th>Hop</th><th>Transfer</th><th>After</th><th>From → To</th><th>Amount</th><th>Upper bound</th><th>When</th></tr></thead>
+            <tbody>{candidates.map(t => (
+              <tr key={t.txn_id}><td>{t.depth}</td><td>{t.ref}</td><td>{t.parent_ref ?? '—'}</td>
+                <td>{t.from_ref} → {t.to_ref}</td><td>{inr(t.amount)}</td><td>{inr(t.upper_bound)}</td><td>{when(t.occurred_at)}</td></tr>
+            ))}</tbody>
+          </table>
+        </details>
       </div>
 
       <div className="card">
@@ -136,7 +154,7 @@ export default async function CaseWorkspace({ params }: { params: Promise<{ id: 
             { name: 'fromTxn', label: 'From (confirmed node)', type: 'select', options: nodeOptions, required: true },
             { name: 'toTxn', label: 'To (next transfer)', type: 'select', options: targetOptions, required: true },
             { name: 'amount', label: 'Amount (₹)', type: 'number', required: true },
-            { name: 'method', label: 'Method', type: 'select', options: ['MANUAL', 'FIFO', 'PROPORTIONAL'].map(m => ({ value: m, label: m })) },
+            { name: 'method', label: 'Method', type: 'select', options: ['MANUAL', 'FIFO'].map(m => ({ value: m, label: m })) },
           ]} />
         </>)}
 
@@ -157,7 +175,7 @@ export default async function CaseWorkspace({ params }: { params: Promise<{ id: 
           <thead><tr><th>Freeze</th><th>Account</th><th>Amount</th><th>Status</th><th>Requested</th></tr></thead>
           <tbody>{freezes.map(f => (
             <tr key={f.freeze_id}><td>#{f.freeze_id}</td><td>{f.account_ref}</td><td>{inr(f.frozen_amount)}</td>
-              <td><span className="badge">{f.status}</span></td><td>{when(f.requested_at)}</td></tr>
+              <td><StatusBadge status={f.status} /></td><td>{when(f.requested_at)}</td></tr>
           ))}
           {freezes.length === 0 && <tr><td colSpan={5} className="muted">No freezes requested.</td></tr>}</tbody>
         </table>

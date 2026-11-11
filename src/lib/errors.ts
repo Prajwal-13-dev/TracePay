@@ -8,15 +8,16 @@ type PgError = { code?: string; message?: string; detail?: string; constraint?: 
 // Plain-language explanations for the constraints a user can realistically hit from a form.
 // The SQLSTATE and constraint name are still returned, so the database rule stays visible.
 const CONSTRAINT_HELP: Record<string, string> = {
-  fund_flow_links_from_node_id_to_node_id_key: 'this link is already confirmed for the case (confirmed links are never edited)',
   fraud_cases_disputed_txn_id_key: 'a complaint for this transfer already exists',
   users_email_key: 'an account with this email already exists',
-  account_freezes_check2: 'four-eyes rule: you cannot approve a freeze you requested',
-  fraud_cases_check: 'verified loss must be more than 0 and at most the reported amount',
+  account_freezes_four_eyes: 'four-eyes rule: you cannot approve a freeze you requested',
+  fraud_cases_verified_loss_check: 'verified loss must be more than 0 and at most the reported amount',
   one_live_allocation: 'this case already has an active allocation on this freeze',
   one_open_assignment: 'this case already has an open assignment',
   trace_nodes_case_id_txn_id_key: 'this transfer is already part of the trace',
   users_phone_check: 'phone must be a 10-digit Indian mobile number',
+  accounts_balance_check: 'the account does not have enough money',
+  draft_complaints_reported_amount_check: 'the amount must be more than 0',
   fraud_cases_narrative_check: 'the description must be 30 to 5,000 characters',
 };
 

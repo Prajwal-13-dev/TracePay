@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function RegisterPage() {
   const [error, setError] = useState('');
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -15,12 +15,18 @@ export default function RegisterPage() {
       body: JSON.stringify({ fullName: f.get('fullName'), email: f.get('email'),
                              phone: f.get('phone'), password: f.get('password') }),
     });
-    const data = await res.json();
-    if (!res.ok) { setError(data.issues?.join('\n') ?? data.error); return; }
-    setDone(true);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { setError(data.issues?.join('\n') ?? data.error ?? `Sign-up failed (HTTP ${res.status}).`); return; }
+    setDone(data.accountRef ?? '');
   }
 
-  if (done) return <div className="card narrow"><p className="ok">Account created.</p><Link href="/login">Sign in</Link></div>;
+  if (done !== null) return (
+    <div className="card narrow">
+      <p className="ok">Your TracePay account is ready.</p>
+      {done && <p>Your bank account number is <b>{done}</b>. You can send money and report fraud after signing in.</p>}
+      <Link className="btn" href="/login">Sign in</Link>
+    </div>
+  );
   return (
     <div className="card narrow">
       <h2>Create a customer account</h2>

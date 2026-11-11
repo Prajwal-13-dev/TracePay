@@ -28,9 +28,11 @@ FROM (VALUES ('v1@demo.in', 'TP1000000001', 60000),   -- V1
 JOIN users u ON u.email = a.email
 ORDER BY a.ref;
 
--- Inserted in label order, so txn_id 1..7 = T1..T7
-INSERT INTO transactions (external_ref, source_account_id, destination_account_id, amount, channel, occurred_at)
-SELECT t.ref, s.account_id, d.account_id, t.amt, 'UPI', t.at::timestamptz
+-- Inserted in label order, so txn_id 1..7 = T1..T7. The balances above are where each account ENDS;
+-- seed_insert_transfers() sets the opening balances so the transfers below arrive at exactly these numbers.
+CREATE TEMP TABLE seed_transfer_rows AS
+SELECT t.n AS ord, t.ref AS external_ref, s.account_id AS source_account_id, d.account_id AS destination_account_id,
+       t.amt::numeric AS amount, 'UPI'::text AS channel, t.at::timestamptz AS occurred_at
 FROM (VALUES
   (1, 'T1', 'TP1000000001', 'TP1000000003', 40000, '2026-10-12 10:00+05:30'),  -- V1 -> A (case C1)
   (2, 'T2', 'TP1000000003', 'TP1000000004', 25000, '2026-10-12 10:20+05:30'),  -- A -> B
@@ -41,5 +43,5 @@ FROM (VALUES
   (7, 'T7', 'TP1000000003', 'TP1000000007',  5000, '2026-10-12 11:30+05:30')   -- A -> E
 ) AS t(n, ref, src, dst, amt, at)
 JOIN accounts s ON s.account_ref = t.src
-JOIN accounts d ON d.account_ref = t.dst
-ORDER BY t.n;
+JOIN accounts d ON d.account_ref = t.dst;
+CALL seed_insert_transfers();

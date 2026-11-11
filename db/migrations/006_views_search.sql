@@ -1,4 +1,4 @@
--- 006_views_search.sql : views, materialized dashboard view, indexes (handbook 11.1, 17.1, 23.1)
+-- 006_views_search.sql : views, the materialized dashboard view and its lazy refresh, indexes.
 
 -- Views --------------------------------------------------------------------------
 CREATE VIEW active_freezes AS
@@ -44,6 +44,39 @@ CREATE MATERIALIZED VIEW supervisor_case_summary AS
              GROUP BY ra.case_id) r ON r.case_id = c.case_id;
 CREATE UNIQUE INDEX supervisor_case_summary_pk ON supervisor_case_summary (case_id);  -- allows REFRESH ... CONCURRENTLY
 
+-- The dashboard refreshes the materialized view only when its data changed: writes to the source tables
+-- mark it stale (statement-level triggers, cheap) and refresh_case_summary() refreshes only if stale.
+CREATE TABLE summary_state (
+  view_name    text PRIMARY KEY,
+  stale        boolean NOT NULL DEFAULT true,
+  refreshed_at timestamptz
+);
+INSERT INTO summary_state (view_name) VALUES ('supervisor_case_summary');
+
+CREATE FUNCTION mark_summary_stale() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $$
+BEGIN
+  UPDATE summary_state SET stale = true WHERE view_name = 'supervisor_case_summary' AND NOT stale;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER fraud_cases_summary_stale AFTER INSERT OR UPDATE OR DELETE ON fraud_cases
+  FOR EACH STATEMENT EXECUTE FUNCTION mark_summary_stale();
+CREATE TRIGGER allocations_summary_stale AFTER INSERT OR UPDATE OR DELETE ON recovery_allocations
+  FOR EACH STATEMENT EXECUTE FUNCTION mark_summary_stale();
+CREATE TRIGGER refunds_summary_stale AFTER INSERT OR UPDATE OR DELETE ON refunds
+  FOR EACH STATEMENT EXECUTE FUNCTION mark_summary_stale();
+
+-- Returns true if it refreshed. SECURITY DEFINER: only the owner may refresh a materialized view.
+CREATE FUNCTION refresh_case_summary() RETURNS boolean
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $$
+BEGIN
+  UPDATE summary_state SET stale = false, refreshed_at = now()
+  WHERE view_name = 'supervisor_case_summary' AND stale;
+  IF NOT FOUND THEN RETURN false; END IF;
+  REFRESH MATERIALIZED VIEW CONCURRENTLY supervisor_case_summary;
+  RETURN true;
+END $$;
+
 -- Indexes: each one exists for a named query ------------------------------------------
 CREATE INDEX idx_txn_source_time       ON transactions (source_account_id, occurred_at, txn_id);  -- each recursive trace step
 CREATE INDEX idx_txn_dest_time         ON transactions (destination_account_id, occurred_at);     -- FIFO inflows, trace_accounts
@@ -58,3 +91,8 @@ CREATE INDEX idx_freeze_account_active ON account_freezes (account_id) WHERE sta
 CREATE INDEX idx_cases_fts             ON fraud_cases USING gin (search_vector);                   -- full-text search
 CREATE INDEX idx_case_embeddings       ON case_embeddings USING hnsw (embedding vector_cosine_ops); -- similar complaints
 CREATE INDEX idx_audit_entity          ON audit_log (entity_type, entity_id, at DESC);              -- audit viewer
+CREATE INDEX idx_links_case                    ON fund_flow_links (case_id);                       -- a case's links
+CREATE INDEX idx_assignments_case              ON case_assignments (case_id, assigned_at);         -- assignment history
+CREATE INDEX idx_assignments_investigator_open ON case_assignments (investigator_id) WHERE ended_at IS NULL;  -- my queue
+CREATE INDEX idx_drafts_customer               ON draft_complaints (customer_id);                  -- customer's drafts
+CREATE INDEX idx_users_role                    ON users (role) WHERE is_active;                    -- staff lists

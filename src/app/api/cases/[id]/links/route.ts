@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { route, idParam, assertAssigned, id, money } from '@/lib/api';
 import { withTx } from '@/lib/db';
 
-const Body = z.object({ fromTxn: id, toTxn: id, amount: money, method: z.enum(['MANUAL', 'FIFO', 'PROPORTIONAL']) });
+const Body = z.object({ fromTxn: id, toTxn: id, amount: money, method: z.enum(['MANUAL', 'FIFO']) });
 
 export const POST = route(['INVESTIGATOR'], Body, ({ user, body, params }) =>
   withTx(user, async c => {

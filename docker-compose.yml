@@ -15,5 +15,20 @@ services:
       interval: 2s
       timeout: 3s
       retries: 30
+  neo4j:
+    image: neo4j:5-community
+    container_name: tracepay-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD}
+      NEO4J_server_memory_heap_max__size: 512m
+    ports: ["7474:7474", "7687:7687"]     # 7474 = Neo4j Browser, 7687 = Bolt (app + sync worker)
+    volumes:
+      - neo4jdata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 >/dev/null || exit 1"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
 volumes:
   pgdata: {}
+  neo4jdata: {}

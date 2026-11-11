@@ -1,29 +1,36 @@
 'use client';
 // Generic form: sends JSON to an API route, shows the database's answer (including TP001 excess
 // details), then refreshes the server-rendered page so tables show the new state.
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { friendlyError } from '@/lib/friendly';
 
 export type Field = {
   name: string; label: string;
   type?: 'text' | 'number' | 'textarea' | 'select' | 'hidden';
   options?: { value: string | number; label: string }[];
   defaultValue?: string | number; required?: boolean; step?: string; placeholder?: string;
+  min?: number; max?: number;
 };
 
 export default function ActionForm({ endpoint, method = 'POST', fields = [], submit, extra = {},
-                                     idempotent = false, confirm, inline = false }: {
+                                     idempotent = false, confirm, inline = false, variant, success = 'Done' }: {
   endpoint: string; method?: 'POST' | 'PATCH' | 'DELETE'; fields?: Field[]; submit: string;
   extra?: Record<string, unknown>; idempotent?: boolean; confirm?: string; inline?: boolean;
+  variant?: 'secondary' | 'danger' | 'ghost';
+  success?: string;            // what to tell the user when it worked, e.g. "Freeze approved"
 }) {
   const router = useRouter();
+  const uid = useId();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // Keep the form element: React clears e.currentTarget once the handler awaits.
+    const form = e.currentTarget;
     if (confirm && !window.confirm(confirm)) return;
-    const f = new FormData(e.currentTarget);
+    const f = new FormData(form);
     const body: Record<string, unknown> = { ...extra };
     for (const fld of fields) {
       const v = f.get(fld.name);
@@ -36,12 +43,11 @@ export default function ActionForm({ endpoint, method = 'POST', fields = [], sub
     const data = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) {
-      const parts = [data.code ? `[${data.code}]` : '', data.error, data.detail, data.issues?.join('; ')];
-      setMsg({ ok: false, text: parts.filter(Boolean).join(' ') || `HTTP ${res.status}` });
+      setMsg({ ok: false, text: friendlyError(data, res.status) });
       return;
     }
-    setMsg({ ok: true, text: 'Done' });
-    e.currentTarget?.reset?.();
+    setMsg({ ok: true, text: success });
+    form.reset();
     router.refresh();
   }
 
@@ -51,22 +57,24 @@ export default function ActionForm({ endpoint, method = 'POST', fields = [], sub
         ? <input key={fld.name} type="hidden" name={fld.name} defaultValue={fld.defaultValue} />
         : (
           <div key={fld.name} className="field">
-            <label>{fld.label}</label>
+            <label htmlFor={`${uid}-${fld.name}`}>{fld.label}</label>
             {fld.type === 'textarea' ? (
-              <textarea name={fld.name} defaultValue={fld.defaultValue} required={fld.required} rows={3} placeholder={fld.placeholder} />
+              <textarea id={`${uid}-${fld.name}`} name={fld.name} defaultValue={fld.defaultValue} required={fld.required} rows={3} placeholder={fld.placeholder} />
             ) : fld.type === 'select' ? (
-              <select name={fld.name} defaultValue={fld.defaultValue} required={fld.required}>
+              <select id={`${uid}-${fld.name}`} name={fld.name} defaultValue={fld.defaultValue} required={fld.required}>
                 {fld.options?.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             ) : (
-              <input name={fld.name} type={fld.type ?? 'text'} defaultValue={fld.defaultValue}
+              <input id={`${uid}-${fld.name}`} name={fld.name} type={fld.type ?? 'text'} defaultValue={fld.defaultValue}
                      required={fld.required} step={fld.step ?? (fld.type === 'number' ? '0.01' : undefined)}
+                     // Money fields default to min 0.01. Not when a step is given: the browser counts steps from min.
+                     min={fld.min ?? (fld.type === 'number' && !fld.step ? 0.01 : undefined)} max={fld.max}
                      placeholder={fld.placeholder} />
             )}
           </div>
         ))}
-      <button disabled={busy}>{busy ? '…' : submit}</button>
-      {msg && <span className={msg.ok ? 'ok' : 'error'}>{msg.text}</span>}
+      <button disabled={busy} className={variant}>{busy ? '…' : submit}</button>
+      {msg && <span className={msg.ok ? 'ok' : 'error'} role="status">{msg.text}</span>}
     </form>
   );
 }

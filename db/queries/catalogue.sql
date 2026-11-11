@@ -23,7 +23,7 @@ BEGIN
      'Someone posing as a delivery agent said my package needed a customs duty payment before release.', 2)
     RETURNING case_id INTO c2;
   CALL assign_case(c1, inv, sup); CALL assign_case(c2, inv, sup);
-  PERFORM set_config('app.user_role', 'INVESTIGATOR', true);
+  PERFORM set_config('app.user_id', inv::text, true);   -- the investigator acts (roles come from users)
   UPDATE fraud_cases SET status = 'INVESTIGATING' WHERE case_id IN (c1, c2);
   CALL start_trace(c1); CALL start_trace(c2);
   CALL confirm_link(c1, tx[1], tx[2], 25000, 'MANUAL', inv);
@@ -32,7 +32,7 @@ BEGIN
   CALL confirm_link(c1, tx[2], tx[5],  8000, 'FIFO',   inv);
   CALL confirm_link(c2, tx[6], tx[4],  3000, 'MANUAL', inv);
   f := request_freeze(c1, (SELECT account_id FROM accounts WHERE account_ref='TP1000000006'), 10000, inv);
-  PERFORM set_config('app.user_role', 'SUPERVISOR', true);
+  PERFORM set_config('app.user_id', sup::text, true);   -- a supervisor acts
   CALL decide_freeze(f, true, sup);
   CALL verify_loss(c1, 40000, sup); CALL verify_loss(c2, 20000, sup);
   UPDATE fraud_cases SET status = 'RECOVERY' WHERE case_id IN (c1, c2);
@@ -41,7 +41,7 @@ BEGIN
   PERFORM process_refund(a, 4000, gen_random_uuid(), sup);
   UPDATE fraud_cases SET investigator_notes = 'Mule account D shared with case ' || c2 WHERE case_id = c1;
 END $$;
-REFRESH MATERIALIZED VIEW supervisor_case_summary;
+SELECT refresh_case_summary() \g /dev/null
 \set QUIET off
 
 \echo '\n== 17.1 Materialized view: supervisor_case_summary'

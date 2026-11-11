@@ -1,19 +1,12 @@
-// Runs before every page in the three role areas: no session -> /login, wrong role -> /login?denied=1.
+// Runs before every page in the three role areas: no valid session cookie -> /login.
+// The role check happens in each page (requirePageRole), against the CURRENT role in the database,
+// because the role inside the cookie can be out of date after a supervisor changes it.
 import { NextResponse, type NextRequest } from 'next/server';
-import { SESSION_COOKIE, verifySession, type Role } from '@/lib/session';
-
-const AREA_ROLE: Record<string, Role> = {
-  '/customer': 'CUSTOMER',
-  '/investigator': 'INVESTIGATOR',
-  '/supervisor': 'SUPERVISOR',
-};
+import { SESSION_COOKIE, verifySession } from '@/lib/session';
 
 export async function proxy(request: NextRequest) {
-  const area = Object.keys(AREA_ROLE).find(p => request.nextUrl.pathname.startsWith(p));
-  if (!area) return NextResponse.next();
   const user = await verifySession(request.cookies.get(SESSION_COOKIE)?.value);
   if (!user) return NextResponse.redirect(new URL('/login', request.url));
-  if (user.role !== AREA_ROLE[area]) return NextResponse.redirect(new URL('/login?denied=1', request.url));
   return NextResponse.next();
 }
 

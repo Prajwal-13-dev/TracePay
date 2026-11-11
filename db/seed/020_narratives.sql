@@ -217,19 +217,21 @@ INSERT INTO seed_cases VALUES
  ('N095', 'TP2000000095', 'TP3000000006', 36400, '2026-09-21 14:05+05:30', 'Interior designer took payment for materials but used cheaper items than agreed.'),
  ('N096', 'TP2000000096', 'TP3000000007', 37800, '2026-09-22 15:12+05:30', 'Paid an astrologer for remedies after he promised results; nothing happened and he stopped calling.');
 
-INSERT INTO transactions (external_ref, source_account_id, destination_account_id, amount, channel, occurred_at)
-SELECT s.ref, a.account_id, b.account_id, s.amt, 'UPI', s.at
-FROM seed_cases s JOIN accounts a ON a.account_ref = s.src JOIN accounts b ON b.account_ref = s.dst ORDER BY s.ref;
+-- The complaint transfers, plus a second unrelated payment for each demo victim (T8, T9).
+-- seed_insert_transfers() sets opening balances so every account ends at its seeded balance.
+CREATE TEMP TABLE seed_transfer_rows AS
+SELECT row_number() OVER (ORDER BY s.ref) AS ord, s.ref AS external_ref, a.account_id AS source_account_id,
+       b.account_id AS destination_account_id, s.amt::numeric AS amount, 'UPI'::text AS channel, s.at::timestamptz AS occurred_at
+FROM seed_cases s JOIN accounts a ON a.account_ref = s.src JOIN accounts b ON b.account_ref = s.dst
+UNION ALL
+SELECT 1000 + x.n, x.ref, a.account_id, b.account_id, x.amt, 'UPI', x.at::timestamptz
+FROM (VALUES (1, 'T8', 'TP1000000001', 'TP3000000001', 3000, '2026-10-20 15:00+05:30'),
+             (2, 'T9', 'TP1000000002', 'TP3000000002', 4500, '2026-10-21 18:30+05:30')) AS x(n, ref, src, dst, amt, at)
+JOIN accounts a ON a.account_ref = x.src JOIN accounts b ON b.account_ref = x.dst;
+CALL seed_insert_transfers();
 
 INSERT INTO fraud_cases (customer_id, disputed_txn_id, reported_amount, narrative, created_at, priority)
 SELECT a.user_id, t.txn_id, s.amt, s.narrative, s.at + interval '2 hours', 1 + (substr(s.ref, 2)::int % 5)
 FROM seed_cases s JOIN transactions t ON t.external_ref = s.ref JOIN accounts a ON a.account_ref = s.src ORDER BY s.ref;
-
--- Extra transfers for the demo victims (a second, unrelated payment each)
-INSERT INTO transactions (external_ref, source_account_id, destination_account_id, amount, channel, occurred_at)
-SELECT x.ref, a.account_id, b.account_id, x.amt, 'UPI', x.at::timestamptz
-FROM (VALUES ('T8', 'TP1000000001', 'TP3000000001', 3000, '2026-10-20 15:00+05:30'),
-             ('T9', 'TP1000000002', 'TP3000000002', 4500, '2026-10-21 18:30+05:30')) AS x(ref, src, dst, amt, at)
-JOIN accounts a ON a.account_ref = x.src JOIN accounts b ON b.account_ref = x.dst;
 
 DROP TABLE seed_cases;

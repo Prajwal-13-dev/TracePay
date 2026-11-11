@@ -9,3 +9,7 @@ out/
 next-env.d.ts
 # embedding model cache
 .cache/
+
+# test output
+test-results/
+tests/e2e-report/

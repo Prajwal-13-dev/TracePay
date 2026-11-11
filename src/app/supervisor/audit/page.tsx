@@ -22,7 +22,7 @@ export default async function AuditLog({ searchParams }: { searchParams: Promise
         <div><label>Entity</label>
           <select name="entity" defaultValue={entity ?? ''}>
             <option value="">All</option>
-            {['fraud_cases', 'trace_nodes', 'fund_flow_links', 'account_freezes', 'recovery_allocations', 'refunds', 'accounts']
+            {['fraud_cases', 'case_assignments', 'trace_nodes', 'fund_flow_links', 'account_freezes', 'recovery_allocations', 'refunds', 'accounts', 'users']
               .map(e => <option key={e}>{e}</option>)}
           </select></div>
         <button>Filter</button>

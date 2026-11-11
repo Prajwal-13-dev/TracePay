@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { route, idParam } from '@/lib/api';
 import { withTx } from '@/lib/db';
 
-const Body = z.object({ approve: z.coerce.boolean(), days: z.coerce.number().int().min(1).max(90).default(7) });
+// approve must be a real JSON boolean: z.coerce.boolean() would turn the string "false" into true.
+const Body = z.object({ approve: z.boolean(), days: z.coerce.number().int().min(1).max(90).default(7) });
 
 export const POST = route(['SUPERVISOR'], Body, ({ user, body, params }) =>
   withTx(user, async c => {
