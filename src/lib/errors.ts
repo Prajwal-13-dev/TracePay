@@ -27,6 +27,7 @@ const PG_STATUS: Record<string, number> = {
   TP003: 422,   // illegal case status transition
   TP004: 409,   // append-only table
   TP005: 422,   // complaint rule
+  TP006: 409,   // account frozen: no money may leave it (010)
   '23505': 409, // unique violation
   '23514': 422, // CHECK violation
   '23503': 422, // foreign key violation

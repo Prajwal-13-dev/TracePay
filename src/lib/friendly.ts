@@ -26,6 +26,7 @@ export function friendlyError(body: ApiError, status?: number): string {
     const [l, t, x] = ['limit', 'total', 'excess'].map(num);
     if (rule && RULES[rule] && [l, t, x].every(Number.isFinite)) return RULES[rule](rupee(l), rupee(t), rupee(x));
   }
+  if (body.code === 'TP006' && body.error) return body.error.charAt(0).toUpperCase() + body.error.slice(1) + '.';
   if (body.code === 'TP003') return `That step isn't allowed right now: ${body.error}.`;
   if (body.code === '40001' || body.code === '40P01') return 'Someone else changed this at the same moment. Please try again.';
   if (body.issues?.length) return 'Please check: ' + body.issues.join('; ');

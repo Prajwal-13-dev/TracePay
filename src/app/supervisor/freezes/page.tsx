@@ -113,6 +113,8 @@ export default async function FreezeDesk({ searchParams }: { searchParams: Promi
       {tab === 'active' && (
       <div className="card">
         <h2>Active freezes: allocation desk</h2>
+        <p className="muted">While a freeze is active the whole account is blocked: it can receive money but cannot send any.
+          Settling pays out only the refunded amount; the rest stays with the account holder.</p>
         <table>
           <thead><tr><th>Freeze</th><th>Account</th><th>Frozen</th><th>Allocated</th><th>Remaining</th><th>Expires</th><th>Allocate</th><th></th></tr></thead>
           <tbody>{active.map(f => {
@@ -124,7 +126,7 @@ export default async function FreezeDesk({ searchParams }: { searchParams: Promi
             const nothingAllocated = Number(f.allocated) === 0;
             return (
               <tr key={f.freeze_id}>
-                <td>#{f.freeze_id}</td><td>{f.account_ref}</td><td>{inr(f.frozen_amount)}</td>
+                <td>#{f.freeze_id}</td><td>{f.account_ref}<div><span className="badge s-ACTIVE">outgoing blocked</span></div></td><td>{inr(f.frozen_amount)}</td>
                 <td>{inr(f.allocated)}</td><td>{inr(f.remaining)}</td><td>{when(f.expires_at)}</td>
                 <td>{opts.length > 0 && (
                   <ActionForm inline endpoint="/api/allocations" submit="Allocate" extra={{ freezeId: Number(f.freeze_id) }}

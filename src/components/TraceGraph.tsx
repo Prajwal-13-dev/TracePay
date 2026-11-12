@@ -91,7 +91,7 @@ export default function TraceGraph({ caseId, graph, fifo, canWork, canFreeze }: 
           <span><i className="sw victim" />Victim</span>
           <span><i className="sw root" />First receiver</span>
           <span><i className="sw shared" />Shared mule (several cases)</span>
-          <span><i className="sw frozen" />Has active freeze</span>
+          <span><i className="sw frozen" />Frozen: outgoing blocked</span>
           <span><i className="ln disputed" />Disputed</span>
           <span><i className="ln confirmed" />Confirmed</span>
           <span><i className="ln candidate" />Suggested path</span>
@@ -187,7 +187,7 @@ function AccountPanel({ caseId, a, canFreeze, onDone }: {
       <dl className="kv">
         <dt>Account</dt><dd>{a.ref}</dd>
         <dt>Balance</dt><dd>{inr(a.balance)}</dd>
-        <dt>Already frozen</dt><dd>{inr(a.frozen)}</dd>
+        <dt>Already frozen</dt><dd>{inr(a.frozen)}{a.frozen > 0 && <span className="badge s-ACTIVE"> outgoing blocked</span>}</dd>
         <dt>Cases reaching it</dt><dd>{a.sharedCases || 0}{a.sharedCases > 1 && <span className="badge warn"> shared mule</span>}</dd>
       </dl>
       {canFreeze && !a.isVictim && (free > 0 ? (
@@ -200,6 +200,8 @@ function AccountPanel({ caseId, a, canFreeze, onDone }: {
           <button disabled={busy}>{busy ? 'Sending…' : 'Request freeze'}</button>
         </form>
       ) : <p className="muted">Nothing left to freeze on this account.</p>)}
+      {a.frozen > 0 && <p className="muted">While a freeze is active no money can leave this account. At settlement only the
+        refunded amount is paid out; the rest stays with the account holder.</p>}
       {msg && <p className={msg.ok ? 'ok' : 'error'}>{msg.text}</p>}
     </>
   );

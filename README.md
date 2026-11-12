@@ -92,7 +92,8 @@ The database enforces who may do what (`create_user`, `set_user_role`, `record_t
 ### How money moves
 
 Every transfer debits the sender and credits the receiver inside PostgreSQL (trigger `apply_transfer`, migration 007):
-overdrafts, spending frozen money and closed accounts are refused. When a freeze is settled (or expires), each
+overdrafts and closed accounts are refused, and an account with an active freeze cannot send any money at all
+(trigger `block_frozen_outgoing`, migration 010; it can still receive). When a freeze is settled (or expires), each
 refunded amount is paid to the victim's account as a `RECOVERY` transfer, which tracing ignores.
 
 ## Tests
@@ -100,7 +101,7 @@ refunded amount is paid to the victim's account as a `RECOVERY` transfer, which 
 | Command | What it checks |
 |---|---|
 | `npm run db:reset` | Rebuilds the database from scratch (all migrations and seeds). Add `-- --graph` to reload Neo4j too. |
-| `npm run test:db` | 209 SQL checks in 10 files, one per migration (`01_core` … `09_roles`) plus `10_alter_drop` (the ALTER/DROP demo). Each file runs in one transaction and rolls back. `npm run test:db -- 05` runs only `05_recovery`. |
+| `npm run test:db` | 221 SQL checks in 11 files, one per migration (`01_core` … `09_roles`), `10_alter_drop` (the ALTER/DROP demo) and `11_freeze_block` (a frozen account can receive but not send). Each file runs in one transaction and rolls back. The tests run in a separate database, `tracepay_test`, rebuilt from scratch each time, so your demo data is never touched and never breaks a test. `npm run test:db -- 05` runs only `05_recovery`; `-- --current` runs against the main database. |
 | `npm run graph:test` | Neo4j: the graph matches PostgreSQL, replaying the outbox makes no duplicates, and every case traces identically to the recursive CTE. |
 | `npm run test:e2e` | Playwright: the whole demo story through the browser as customer, supervisor and investigator, then a supervisor adding an investigator and a new customer registering, sending money and reporting it. Resets the database first, starts the app on port 3100, and saves report screenshots to `docs/screenshots/`. |
 
@@ -129,7 +130,8 @@ races two claims on the same transfer through five PostgreSQL strategies and thr
 ```
 db/migrations/   001 core tables and status lookups · 002 integrity triggers, state machine, audit · 003 constraint engine
                  004 tracing · 005 recovery procedures · 006 views, indexes · 007 users, accounts, transfers
-                 008 Neo4j outbox · 009 database roles   (each file builds its part of the final schema directly)
+                 008 Neo4j outbox · 009 database roles · 010 frozen accounts cannot send
+                 (each file builds its part of the final schema directly)
 db/seed/         010 demo scenario (T1-T7) · 020 96-complaint corpus · 030 laundering chains
                  narratives.json: the same 96 narratives with their scam-type labels, for judging search quality
 db/graph/        Neo4j schema (applied by graph-sync)

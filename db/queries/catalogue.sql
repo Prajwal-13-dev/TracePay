@@ -1,4 +1,4 @@
--- Query catalogue (handbook Section 17): every required SQL concept, run on a demo state.
+-- Query catalogue: every required SQL concept, run on a demo state.
 -- Builds the demo workflow inside a transaction, runs each query, then rolls back.
 -- Run: docker compose exec postgres psql -U tracepay_owner -d tracepay -f /db/queries/catalogue.sql
 \set QUIET on

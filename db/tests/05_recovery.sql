@@ -54,9 +54,12 @@ SELECT pg_temp.fails('T14 approving 5,000 more at D (balance 12,000)', format('C
 SELECT pg_temp.ok('decline that request instead', format('CALL decide_freeze(%s, false, 0)', :f2));
 SELECT pg_temp.check('D cannot spend the frozen money',
   (SELECT balance FROM accounts WHERE account_id = :acct_d) = 12000);
-SELECT pg_temp.fails('D tries to send 3,000 (12,000 held 10,000)',
+SELECT pg_temp.fails('D tries to send 3,000 while frozen: the whole account is blocked (010)',
   $$INSERT INTO transactions (external_ref, source_account_id, destination_account_id, amount, channel, occurred_at)
-    VALUES ('ESCAPE', 6, 7, 3000, 'UPI', now())$$, 'TP002');
+    VALUES ('ESCAPE', 6, 7, 3000, 'UPI', now())$$, 'TP006');
+SELECT pg_temp.fails('D cannot send even the unfrozen 2,000 while the freeze is active',
+  $$INSERT INTO transactions (external_ref, source_account_id, destination_account_id, amount, channel, occurred_at)
+    VALUES ('ESCAPE-2', 6, 7, 2000, 'UPI', now())$$, 'TP006');
 
 -- Verify losses and move to RECOVERY
 SELECT pg_temp.fails('allocation before the case is in RECOVERY', format('SELECT allocate_recovery(%s, %s, 1000, 0)', :f1, :c1), 'TP002');
